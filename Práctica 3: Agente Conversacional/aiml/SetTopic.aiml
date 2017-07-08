@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!--Este archivo contiene las frases clave de un nivel. Sirve para cambiar el topic-->
+
+<!--Agenda de contactos-->
+
+<category>
+  <pattern>Quiero gestionar mis contactos</pattern>
+  <template>
+    <think>
+      <set name="topic">contactos</set>
+    </think>
+    Cargando contactos...
+  </template>
+</category>
+
+
+<category>
+  <pattern>gestion de contactos</pattern>
+  <template><srai>QUIERO GESTIONAR MIS CONTACTOS</srai></template>
+</category>
+
+
+<category>
+  <pattern>^ gestionar (mis) (los) contactos ^</pattern>
+  <template><srai>QUIERO GESTIONAR MIS CONTACTOS</srai></template>
+</category>
+
+
+<category>
+  <pattern>^ agenda de contactos ^</pattern>
+  <template><srai>QUIERO GESTIONAR MIS CONTACTOS</srai></template>
+</category>
+
+
+<!--Agenda de eventos-->
+<!-- En el topic eventos está incluido el nivel 2 y 3 -->
+
+<category>
+  <pattern>Quiero gestionar mis eventos</pattern>
+  <template>
+    <think>
+      <set name="topic">eventos</set>
+    </think>
+    Cargando eventos...
+  </template>
+</category>
+
+
+<category>
+  <pattern>gestion de eventos</pattern>
+  <template><srai>QUIERO GESTIONAR MIS EVENTOS</srai></template>
+</category>
+
+
+<category>
+  <pattern>^ gestionar (mis) (los) eventos ^</pattern>
+  <template><srai>QUIERO GESTIONAR MIS EVENTOS</srai></template>
+</category>
+
+
+<category>
+  <pattern>^ agenda de eventos ^</pattern>
+  <template><srai>QUIERO GESTIONAR MIS EVENTOS</srai></template>
+</category>
+
+</aiml>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!--Conjunto de reglas simples para interaccionar con el bot-->
+
+<category>
+  <pattern>Hola ^</pattern>
+  <template>
+    <random>
+      <li>Hola, que tal, ¿cómo estás?</li>
+      <li>Hola!!</li>
+      <li>Bienvenido de nuevo!</li>
+    </random>
+  </template>
+</category>
+
+
+<category>
+  <pattern>^ estas (tu) ^</pattern>
+  <template>Estoy genial!!! Gracias por preguntar</template>
+</category>
+
+
+<category>
+  <pattern>^ bien y tu ^</pattern>
+  <template>Estoy genial!!! Gracias por preguntar</template>
+</category>
+
+
+<category>
+  <pattern>Me llamo *</pattern>
+  <template>
+    <think>
+      <set var="nombre"><star/></set>
+    </think>
+    Encantado <star/>!! yo tambien tengo nombre, me llamo A.P.O, another personal organizer.
+  </template>
+</category>
+
+
+<category>
+  <pattern>[buenos buenas] [dias tardes noches]</pattern>
+  <template><srai>HOLA</srai></template>
+</category>
+
+
+<category>
+  <pattern>^ gracias ^</pattern>
+  <template>De nada </template>
+</category>
+
+
+<category>
+  <pattern>Adios</pattern>
+  <template>
+    <random>
+      <li>Hasta otra!!</li>
+      <li>Nos vemos!!</li>
+      <li>Hasta luego!!</li>
+    </random>
+  </template>
+</category>
+
+
+<category>
+  <pattern>Hasta luego</pattern>
+  <template><srai>ADIOS</srai></template>
+</category>
+
+
+</aiml>

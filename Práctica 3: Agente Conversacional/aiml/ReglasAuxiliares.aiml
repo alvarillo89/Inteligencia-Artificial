@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!-- Reglas con funcionalidad específica para determinados procesos-->
+
+<!-- Regla que dada una hora elimina los dos puntos y da el formato apropiado 9:30 -> 0930 -->
+<category>
+<pattern>formathora *</pattern>
+<template>
+  <think>
+    <set var="tmp"><srai>DELETREA <star/></srai></set>
+    <set var="size"><srai>COUNT <get var="tmp"/></srai></set>
+  </think>
+    <condition var="size">
+      <li value="4">
+        <think>
+          <set var="uno"><srai>ITERATE <get var="tmp"/></srai></set>
+          <set var="punto"><srai>NEXT</srai></set>
+          <set var="dos"><srai>NEXT</srai></set>
+          <set var="tres"><srai>NEXT</srai></set>
+        </think>
+        0<get var="uno"/><get var="dos"/><get var="tres"/>
+      </li>
+      <li>
+        <think>
+          <set var="uno"><srai>ITERATE <get var="tmp"/></srai></set>
+          <set var="dos"><srai>NEXT</srai></set>
+          <set var="punto"><srai>NEXT</srai></set>
+          <set var="tres"><srai>NEXT</srai></set>
+          <set var="cuatro"><srai>NEXT</srai></set>
+        </think>
+        <get var="uno"/><get var="dos"/><get var="tres"/><get var="cuatro"/>
+      </li>
+    </condition>
+</template>
+</category>
+
+
+<!-- Devuelve una cadena nula para inicializar eventos-->
+<category>
+  <pattern>nullable</pattern>
+  <template>null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null null</template>
+</category>
+
+
+
+<!-- Comprueba si la fecha tiene un formato válido: DD/MM/AAAA-->
+<!-- Return YES si está bien, NO en caso contrario-->
+<category>
+<pattern>formatofecha *</pattern>
+<template>
+  <think>
+    <set var="tmp"><srai>DELETREA <star/></srai></set>
+    <set var="tama"><srai>COUNT <get var="tmp"/></srai></set>
+  </think>
+  <condition var="tama">
+    <li value="10">
+    <think>
+      <set var="dia1"><srai>ITERATE <get var="tmp"/></srai></set>
+      <set var="dia2"><srai>NEXT</srai></set>
+      <set var="barra1"><srai>NEXT</srai></set>
+      <set var="mes1"><srai>NEXT</srai></set>
+      <set var="mes2"><srai>NEXT</srai></set>
+      <set var="barra2"><srai>NEXT</srai></set>
+      <set var="anio1"><srai>NEXT</srai></set>
+      <set var="anio2"><srai>NEXT</srai></set>
+      <set var="anio3"><srai>NEXT</srai></set>
+      <set var="anio4"><srai>NEXT</srai></set>
+    </think>
+    <condition var="barra1">
+      <li value="/"><condition var="barra2"><li value="/">YES</li><li>NO</li></condition></li>
+      <li>NO</li>
+    </condition>
+    </li>
+    <li>NO</li>
+  </condition>
+</template>
+</category>
+
+
+<!-- Dada una fecha devuelve los elementos separados 10/10/2017 -> 10 10 2017 -->
+<!-- También elimina ceros a la izquierda -->
+<category>
+<pattern>separafecha *</pattern>
+<template>
+  <think>
+    <set var="tmp"><srai>DELETREA <star/></srai></set>
+    <set var="dia1"><srai>ITERATE <get var="tmp"/></srai></set>
+    <set var="dia2"><srai>NEXT</srai></set>
+    <set var="barra1"><srai>NEXT</srai></set>
+    <set var="mes1"><srai>NEXT</srai></set>
+    <set var="mes2"><srai>NEXT</srai></set>
+    <set var="barra2"><srai>NEXT</srai></set>
+    <set var="anio1"><srai>NEXT</srai></set>
+    <set var="anio2"><srai>NEXT</srai></set>
+    <set var="anio3"><srai>NEXT</srai></set>
+    <set var="anio4"><srai>NEXT</srai></set>
+  </think>
+  <condition var="dia1">
+    <li value="0">
+      <condition var="mes1">
+        <li value="0">
+          <get var="dia2"/> <get var="mes2"/> <get var="anio1"/><get var="anio2"/><get var="anio3"/><get var="anio4"/>
+        </li>
+        <li><get var="dia2"/> <get var="mes1"/><get var="mes2"/> <get var="anio1"/><get var="anio2"/><get var="anio3"/><get var="anio4"/></li>
+      </condition>
+    </li>
+    <li>
+      <condition var="mes1">
+        <li value="0">
+          <get var="dia1"/><get var="dia2"/> <get var="mes2"/> <get var="anio1"/><get var="anio2"/><get var="anio3"/><get var="anio4"/>
+        </li>
+        <li><get var="dia1"/><get var="dia2"/> <get var="mes1"/><get var="mes2"/> <get var="anio1"/><get var="anio2"/><get var="anio3"/><get var="anio4"/></li>
+      </condition>
+    </li>
+  </condition>
+</template>
+</category>
+
+
+<!-- Función que comprueba una fecha, Reune a los dos anteriores junto con validdate -->
+<!-- Devuelve : 1 - fecha correcta, 2 - formato incorrecto, 3-fecha incorrecta -->
+<category>
+  <pattern>compruebafecha *</pattern>
+  <template>
+    <think>
+      <set var="fecha"><star/></set>
+      <set var="formato"><srai>FORMATOFECHA <get var="fecha"/></srai></set>
+      <set var="fechaseparada"><srai>SEPARAFECHA <get var="fecha"/></srai></set>
+      <set var="valid"><srai>VALIDDATE <get var="fechaseparada"/></srai></set>
+    </think>
+    <condition var="formato">
+      <li value="NO">2</li>
+      <li>
+        <condition var="valid">
+          <li value="NO">3</li>
+          <li>1</li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Devuelve una lista con los eventos de una determinada fecha -->
+<!-- Precondición, la fecha es correcta y está en el map -->
+<category>
+  <pattern>EVENTOSEN *</pattern>
+  <template>
+    <think>
+      <set var="contador">1</set>
+      <set var="salida"></set>
+      <set var="eventos"><map name="evento"><star/></map></set>
+      <set var="actual"><srai>ITERATE <get var="eventos"/></srai></set>
+    </think>
+    <condition var="contador">
+      <li value="49"><get var="salida"/></li>
+      <li>
+        <condition var="actual">
+          <li value="null"></li>
+          <li><think><set var="salida"><get var="salida"/> <get var="actual"/></set></think></li>
+        </condition>
+        <think>
+          <set var="contador"><map name="successor"><get var="contador"/></map></set>
+          <set var="actual"><srai>NEXT</srai></set>
+        </think>
+        <loop/>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!--Dada una hora devuelve la más próxima en la agenda -->
+<!-- Recibe la hora y los minutos -->
+<category>
+  <pattern>HORASIGUIENTE * *</pattern>
+  <template>
+    <think>
+      <set var="h1"><srai>SELECTITEM 1 IN <srai>DELETREA <star/></srai></srai></set>
+      <set var="m1"><srai>SELECTITEM 1 IN <srai>DELETREA <star index="2"/></srai></srai></set>
+      <condition var="h1">
+        <li value="0"><set var="hora"><srai>SELECTITEM 2 IN <srai>DELETREA <star/></srai></srai></set></li>
+        <li><set var="hora"><star/></set></li>
+      </condition>
+      <condition var="m1">
+        <li value="0"><set var="minutos"><srai>SELECTITEM 2 IN <srai>DELETREA <star index="2"/></srai></srai></set></li>
+        <li><set var="minutos"><star index="2"/></set></li>
+      </condition>
+      <set var="contador"><get var="minutos"/></set>
+    </think>
+    <condition var="contador">
+      <li value="0"><srai>FORMATHORA <get var="hora"/>:00</srai></li>
+      <li value="30"><srai>FORMATHORA <get var="hora"/>:30</srai></li>
+      <li value="60">
+        <think>
+          <set var="siguiente"><map name="successor"><get var="hora"/></map></set>
+          <condition var="siguiente">
+            <li value="24"><set var="siguiente">00</set></li>
+          </condition>
+        </think>
+        <srai>FORMATHORA <get var="siguiente"/>:00</srai></li>
+      <li>
+        <think><set var="contador"><map name="successor"><get var="contador"/></map></set></think>
+        <loop/>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Determina el proximo evento dada una lista de eventos, hora y minuto de inicio-->
+<category>
+  <pattern>PROXIMOEVENTO * AT * *</pattern>
+  <template>
+    <think>
+      <set var="hora"><srai>HORASIGUIENTE <star index="2"/> <star index="3"/></srai></set>
+      <set var="contador"><map name="hora"><get var="hora"/></map></set>
+      <set var="salida">No tienes eventos</set>
+      <set var="eventos"><star/></set>
+      <set var="actual"><srai>SELECTITEM <get var="contador"/> IN <get var="eventos"/></srai></set>
+    </think>
+    <condition var="contador">
+      <li value="49"><get var="salida"/></li>
+      <li>
+        <condition var="actual">
+          <li value="null">
+            <think>
+              <set var="contador"><map name="successor"><get var="contador"/></map></set>
+              <set var="actual"><srai>SELECTITEM <get var="contador"/> IN <get var="eventos"/></srai></set>
+            </think>
+          </li>
+          <li>
+            <think>
+              <set var="salida">Tu proximo evento es : <get var="actual"/></set>
+              <set var="contador">49</set>
+            </think>
+          </li>
+        </condition>
+        <loop/>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Tomorrow modificado: devuelve la fecha en fomato en dd/mm/yyyy-->
+<category>
+  <pattern>TOMORROWMOD * * *</pattern>
+  <template>
+    <think>
+      <set var="fecha"><srai>TOMORROW <star/> <star index="2"/> <star index="3"/></srai></set>
+      <set var="fechaseparada"><srai>DELETREA <get var="fecha"/></srai></set>
+      <set var="size"><srai>COUNT <get var="fechaseparada"/></srai></set>
+    </think>
+    <condition var="size">
+      <li value="10"><get var="fecha"/></li>
+      <li value="8">
+        <think>
+          <set var="dia1"><srai>ITERATE <get var="fechaseparada"/></srai></set>
+          <set var="barra1"><srai>NEXT</srai></set>
+          <set var="mes1"><srai>NEXT</srai></set>
+          <set var="barra2"><srai>NEXT</srai></set>
+          <set var="anio1"><srai>NEXT</srai></set>
+          <set var="anio2"><srai>NEXT</srai></set>
+          <set var="anio3"><srai>NEXT</srai></set>
+          <set var="anio4"><srai>NEXT</srai></set>
+        </think>
+        0<get var="dia1"/>/0<get var="mes1"/>/<get var="anio1"/><get var="anio2"/><get var="anio3"/><get var="anio4"/>
+      </li>
+      <li value="9">
+        <think>
+          <set var="1"><srai>ITERATE <get var="fechaseparada"/></srai></set>
+          <set var="2"><srai>NEXT</srai></set>
+          <set var="3"><srai>NEXT</srai></set>
+          <set var="4"><srai>NEXT</srai></set>
+          <set var="5"><srai>NEXT</srai></set>
+          <set var="6"><srai>NEXT</srai></set>
+          <set var="7"><srai>NEXT</srai></set>
+          <set var="8"><srai>NEXT</srai></set>
+          <set var="9"><srai>NEXT</srai></set>
+        </think>
+        <condition var="2">
+          <li value="/">
+            0<get var="1"/>/<get var="3"/><get var="4"/>/<get var="6"/><get var="7"/><get var="8"/><get var="9"/>
+          </li>
+          <li>
+            <get var="1"/><get var="2"/>/0<get var="4"/>/<get var="6"/><get var="7"/><get var="8"/><get var="9"/>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Determina el último evento dada una lista de eventos. Recibe la hora y minuto hasta la que comprobar-->
+<category>
+  <pattern>LASTEVENT * UNTIL * *</pattern>
+  <template>
+    <think>
+      <set var="hora"><srai>HORASIGUIENTE <star index="2"/> <star index="3"/></srai></set>
+      <set var="limite"><map name="hora"><get var="hora"/></map></set>
+      <set var="contador">48</set>
+      <set var="salida">No tienes eventos</set>
+      <set var="eventos"><star/></set>
+      <set var="actual"><srai>SELECTITEM <get var="contador"/> IN <get var="eventos"/></srai></set>
+    </think>
+    <condition var="contador">
+      <li><value><get var="limite"/></value><get var="salida"/></li>
+      <li>
+        <condition var="actual">
+          <li value="null">
+            <think>
+              <set var="contador"><map name="predecessor"><get var="contador"/></map></set>
+              <set var="actual"><srai>SELECTITEM <get var="contador"/> IN <get var="eventos"/></srai></set>
+            </think>
+          </li>
+          <li>
+            <think>
+              <set var="salida">Tu ultimo evento es : <get var="actual"/></set>
+              <set var="contador"><get var="limite"/></set>
+            </think>
+          </li>
+        </condition>
+        <loop/>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!--Proporciona la lista de contactos con los que nos tenemos que reunir dada una fecha-->
+<category>
+  <pattern>DIMECONTACTOS *</pattern>
+  <template>
+    <think>
+      <set var="valores"><readkeys>evper</readkeys></set>
+      <set var="contador">1</set>
+      <set var="limite"><map name="successor"><srai>COUNT <get var="valores"/></srai></map></set>
+      <set var="salida"></set>
+      <set var="actual"><srai>ITERATE <get var="valores"/></srai></set>
+    </think>
+    <condition var="contador">
+      <li><value><get var="limite"/></value><get var="salida"/></li>
+      <li>
+        <think>
+          <set var="contador"><map name="successor"><get var="contador"/></map></set>
+          <set var="fechaactual"><srai>DAMEFECHA <get var="actual"/></srai></set>
+          <set var="valido"><srai>COMPARE <get var="fechaactual"/> WITH <star/></srai></set>
+          <condition var="valido">
+            <li value="YES">
+              <set var="contactos"><map name="evper"><get var="actual"/></map></set>
+              <set var="salida"><get var="salida"/> <get var="contactos"/></set>
+            </li>
+          </condition>
+          <set var="actual"><srai>NEXT</srai></set>
+        </think>
+        <loop/>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Dado dd/mm/yyyy_hhmm devuelve solo la fecha -->
+<category>
+  <pattern>DAMEFECHA *</pattern>
+  <template>
+    <think>
+      <set var="fecha"><srai>DELETREA <star/></srai></set>
+      <set var="fecha"><srai>REMOVEITEM 15 IN <get var="fecha"/></srai></set>
+      <set var="fecha"><srai>REMOVEITEM 14 IN <get var="fecha"/></srai></set>
+      <set var="fecha"><srai>REMOVEITEM 13 IN <get var="fecha"/></srai></set>
+      <set var="fecha"><srai>REMOVEITEM 12 IN <get var="fecha"/></srai></set>
+      <set var="fecha"><srai>REMOVEITEM 11 IN <get var="fecha"/></srai></set>
+      <set var="fecha"><srai>QUITARESPACIOS <get var="fecha"/></srai></set>
+    </think>
+    <get var="fecha"/>
+  </template>
+</category>
+
+
+<!-- Dado dd/mm/yyyy_hhmm devuelve solo la hora en formato hh:mm-->
+<category>
+  <pattern>DAMEHORA *</pattern>
+  <template>
+    <think>
+      <set var="fecha"><srai>DELETREA <star/></srai></set>
+      <set var="hora"></set>
+      <set var="hora"><get var="hora"/><srai>SELECTITEM 12 IN <get var="fecha"/></srai></set>
+      <set var="hora"><get var="hora"/><srai>SELECTITEM 13 IN <get var="fecha"/></srai></set>
+      <set var="hora"><get var="hora"/><srai>SELECTITEM 14 IN <get var="fecha"/></srai></set>
+      <set var="hora"><get var="hora"/><srai>SELECTITEM 15 IN <get var="fecha"/></srai></set>
+    </think>
+    <srai>PONPUNTOS <get var="hora"/></srai>
+  </template>
+</category>
+
+
+<!-- Pone los dos puntos a una hora: 0000 -> 00:00 -->
+<category>
+  <pattern>PONPUNTOS *</pattern>
+  <template>
+    <think>
+      <set var="hora"><srai>DELETREA <star/></srai></set>
+      <set var="hora"><srai>INSERTITEM : POS 2 IN <get var="hora"/></srai></set>
+      <set var="hora"><srai>QUITARESPACIOS <get var="hora"/></srai></set>
+    </think>
+    <get var="hora"/>
+  </template>
+</category>
+
+
+<!-- Dada una lista de eventos devuelve una lista con las horas en las que no hay eventos -->
+<!-- Recibe la hora y el minuto a partir de los que es necesario comprobar -->
+<category>
+  <pattern>HUECOSEN * AT * *</pattern>
+  <template>
+    <think>
+      <set var="hora"><srai>HORASIGUIENTE <star index="2"/> <star index="3"/></srai></set>
+      <set var="contador"><map name="hora"><get var="hora"/></map></set>
+      <set var="contadoraux">1</set>
+      <set var="salida"></set>
+      <set var="eventos"><star/></set>
+      <set var="actual"><srai>ITERATE <get var="eventos"/></srai></set>
+      <!-- Situar el iterador en la primera hora válida -->
+      <condition var="contadoraux">
+        <li><value><get var="contador"/></value></li>
+        <li>
+          <set var="actual"><srai>NEXT</srai></set>
+          <set var="contadoraux"><map name="successor"><get var="contadoraux"/></map></set>
+          <loop/>
+        </li>
+      </condition>
+    </think>
+    <condition var="contador">
+      <li value="49"><get var="salida"/></li>
+      <li>
+        <condition var="actual">
+          <li value="null"><think><set var="salida"><get var="salida"/> <srai>PONPUNTOS <map name="pos"><get var="contador"/></map></srai></set></think></li>
+        </condition>
+        <think>
+          <set var="contador"><map name="successor"><get var="contador"/></map></set>
+          <set var="actual"><srai>NEXT</srai></set>
+        </think>
+        <loop/>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Dada una lista de eventos devuelve una lista con las horas en las que no hay eventos -->
+<!-- Recibe las horas y minutos entre los cuales comprobar la existencia de huecos -->
+<category>
+  <pattern>HUECOSEN * AT * * AND * *</pattern>
+  <template>
+    <think>
+      <set var="horainicio"><srai>HORASIGUIENTE <star index="2"/> <star index="3"/></srai></set>
+      <set var="horafin"><star index="4"/><star index="5"/></set>
+      <set var="contador"><map name="hora"><get var="horainicio"/></map></set>
+      <set var="limite"><map name="successor"><map name="hora"><get var="horafin"/></map></map></set>
+      <set var="contadoraux">1</set>
+      <set var="salida"></set>
+      <set var="eventos"><star/></set>
+      <set var="actual"><srai>ITERATE <get var="eventos"/></srai></set>
+      <condition var="contadoraux">
+        <li><value><get var="contador"/></value></li>
+        <li>
+          <set var="actual"><srai>NEXT</srai></set>
+          <set var="contadoraux"><map name="successor"><get var="contadoraux"/></map></set>
+          <loop/>
+        </li>
+      </condition>
+    </think>
+    <condition var="contador">
+      <li><value><get var="limite"/></value><get var="salida"/></li>
+      <li>
+        <condition var="actual">
+          <li value="null"><think><set var="salida"><get var="salida"/> <srai>PONPUNTOS <map name="pos"><get var="contador"/></map></srai></set></think></li>
+        </condition>
+        <think>
+          <set var="contador"><map name="successor"><get var="contador"/></map></set>
+          <set var="actual"><srai>NEXT</srai></set>
+        </think>
+        <loop/>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Obtiene las fechas y horas (dd/mm/yyyy_hhmm) en las que hay que reunirse con un contacto -->
+<category>
+  <pattern>FECHASREUNION *</pattern>
+  <template>
+    <think>
+      <set var="valores"><readkeys>evper</readkeys></set>
+      <set var="contador">1</set>
+      <set var="limite"><map name="successor"><srai>COUNT <get var="valores"/></srai></map></set>
+      <set var="salida"></set>
+      <set var="actual"><srai>ITERATE <get var="valores"/></srai></set>
+    </think>
+    <condition var="contador">
+      <li><value><get var="limite"/></value><get var="salida"/></li>
+      <li>
+        <think>
+          <set var="contador"><map name="successor"><get var="contador"/></map></set>
+          <set var="contactos"><map name="evper"><get var="actual"/></map></set>
+          <set var="valido"><srai>FINDITEM <star/> IN <get var="contactos"/></srai></set>
+          <condition var="valido">
+            <li value="0"></li>
+            <li>
+              <set var="salida"><get var="salida"/> <get var="actual"/></set>
+            </li>
+          </condition>
+          <set var="actual"><srai>NEXT</srai></set>
+        </think>
+        <loop/>
+      </li>
+    </condition>
+  </template>
+</category>
+</aiml>

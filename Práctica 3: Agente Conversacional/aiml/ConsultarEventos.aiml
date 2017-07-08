@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!--Implementación del nivel 3-->
+<topic name="eventos">
+
+
+<!-- Comprobar si tengo el día libre -->
+<category>
+  <pattern>^ tengo el dia libre ^</pattern>
+  <template>
+    <think>
+      <set var="fecha"><date jformat="dd/MM/yyyy"/></set>
+      <set var="lista"><map name="evento"><get var="fecha"/></map></set>
+    </think>
+    <condition var="lista">
+      <li value="unknown">Si</li>
+      <li>
+        <think>
+          <set var="eventos"><srai>EVENTOSEN <get var="fecha"/></srai></set>
+          <set var="size"><srai>COUNT <get var="eventos"/></srai></set>
+        </think>
+        <condition var="size">
+          <li value="0">Si</li>
+          <li>No</li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Ver próximos eventos -->
+<category>
+  <pattern>^ cual es (el) (mi) proximo evento (de) (el) (del) * ^</pattern>
+  <template>
+    <think>
+      <set var="res"><star index="2"/></set>
+      <set var="valido?">1</set>
+    </think>
+    <condition var="res">
+      <li value="hoy">
+        <think>
+          <set var="fecha"><date jformat="dd/MM/yyyy"/></set>
+          <set var="horaev"><date jformat="HH"/></set>
+          <set var="minev"><date jformat="mm"/></set>
+        </think>
+      </li>
+      <li value="mañana">
+        <think>
+          <set var="fechaseparada"><srai>SEPARAFECHA <date jformat="dd/MM/yyyy"/></srai></set>
+          <set var="fecha"><srai>TOMORROWMOD <get var="fechaseparada"/></srai></set>
+          <set var="horaev">23</set>
+          <set var="minev">31</set>
+        </think>
+      </li>
+      <li>
+        <think><set var="valido?"><srai>COMPRUEBAFECHA <get var="res"/></srai></set></think>
+        <condition var="valido?">
+          <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+          <li value="3">Lo siento, necesito que me digas una fecha válida</li>
+          <li>
+            <think>
+              <set var="fecha"><get var="res"/></set>
+              <set var="horaev">23</set>
+              <set var="minev">31</set>
+            </think>
+          </li>
+        </condition>
+      </li>
+    </condition>
+    <condition var="valido?">
+      <li value="1">
+        <think><set var="lista"><map name="evento"><get var="fecha"/></map></set></think>
+        <condition var="lista">
+          <li value="unknown">No tienes eventos</li>
+          <li>
+            <srai>PROXIMOEVENTO  <get var="lista"/> AT <get var="horaev"/> <get var="minev"/></srai>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Ver ultimos eventos -->
+<category>
+  <pattern>^ cual es (el) (mi) ultimo evento (de) (el) (del) * ^</pattern>
+  <template>
+    <think>
+      <set var="res"><star index="2"/></set>
+      <set var="valido?">1</set>
+    </think>
+    <condition var="res">
+      <li value="hoy">
+        <think>
+          <set var="fecha"><date jformat="dd/MM/yyyy"/></set>
+          <set var="horaev"><date jformat="HH"/></set>
+          <set var="minev"><date jformat="mm"/></set>
+        </think>
+      </li>
+      <li value="mañana">
+        <think>
+          <set var="fechaseparada"><srai>SEPARAFECHA <date jformat="dd/MM/yyyy"/></srai></set>
+          <set var="fecha"><srai>TOMORROWMOD <get var="fechaseparada"/></srai></set>
+          <set var="horaev">23</set>
+          <set var="minev">31</set>
+        </think>
+      </li>
+      <li>
+        <think><set var="valido?"><srai>COMPRUEBAFECHA <get var="res"/></srai></set></think>
+        <condition var="valido?">
+          <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+          <li value="3">Lo siento, necesito que me digas una fecha válida</li>
+          <li>
+            <think>
+              <set var="fecha"><get var="res"/></set>
+              <set var="horaev">23</set>
+              <set var="minev">31</set>
+            </think>
+          </li>
+        </condition>
+      </li>
+    </condition>
+    <condition var="valido?">
+      <li value="1">
+        <think><set var="lista"><map name="evento"><get var="fecha"/></map></set></think>
+        <condition var="lista">
+          <li value="unknown">No tienes eventos</li>
+          <li>
+            <srai>LASTEVENT <get var="lista"/> UNTIL <get var="horaev"/> <get var="minev"/></srai>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Ver con quien hay que reunirse -->
+<category>
+  <pattern>^ con quien+ (me) [tengo debo] (de) (que) [reunir reunion reunirme] (el) * ^</pattern>
+  <template>
+    <think>
+      <set var="res"><star index="2"/></set>
+      <set var="valido?">1</set>
+    </think>
+    <condition var="res">
+      <li value="hoy">
+        <think>
+          <set var="fecha"><date jformat="dd/MM/yyyy"/></set>
+        </think>
+      </li>
+      <li value="mañana">
+        <think>
+          <set var="fechaseparada"><srai>SEPARAFECHA <date jformat="dd/MM/yyyy"/></srai></set>
+          <set var="fecha"><srai>TOMORROWMOD <get var="fechaseparada"/></srai></set>
+        </think>
+      </li>
+      <li>
+        <think><set var="valido?"><srai>COMPRUEBAFECHA <get var="res"/></srai></set></think>
+        <condition var="valido?">
+          <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+          <li value="3">Lo siento, necesito que me digas una fecha válida</li>
+          <li>
+            <think>
+              <set var="fecha"><get var="res"/></set>
+            </think>
+          </li>
+        </condition>
+      </li>
+    </condition>
+    <condition var="valido?">
+      <li value="1">
+        <think><set var="lista"><map name="evento"><get var="fecha"/></map></set></think>
+        <condition var="lista">
+          <li value="unknown">No tienes eventos</li>
+          <li>
+          <think>
+            <set var="salida"><srai>DIMECONTACTOS <get var="fecha"/></srai></set>
+            <set var="tama"><srai>COUNT <get var="salida"/></srai></set>
+          </think>
+          <condition var="tama">
+            <li value="0">Te tienes que reunir con: Nadie</li>
+            <li>Te tienes que reunir con: <get var="salida"/></li>
+          </condition>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Comprobar huecos libres -->
+<category>
+  <pattern>^ teng+ [algun un] hueco libre (el) (dia) * ^</pattern>
+  <template>
+    <think>
+      <set var="res"><star index="2"/></set>
+      <set var="valido?">1</set>
+      <set name="evnum">1</set>
+    </think>
+    <condition var="res">
+      <li value="hoy">
+        <think>
+          <set var="fecha"><date jformat="dd/MM/yyyy"/></set>
+          <set var="horaev"><date jformat="HH"/></set>
+          <set var="minev"><date jformat="mm"/></set>
+        </think>
+      </li>
+      <li value="mañana">
+        <think>
+          <set var="fechaseparada"><srai>SEPARAFECHA <date jformat="dd/MM/yyyy"/></srai></set>
+          <set var="fecha"><srai>TOMORROWMOD <get var="fechaseparada"/></srai></set>
+          <set var="horaev">23</set>
+          <set var="minev">31</set>
+        </think>
+      </li>
+      <li>
+        <think><set var="valido?"><srai>COMPRUEBAFECHA <get var="res"/></srai></set></think>
+        <condition var="valido?">
+          <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+          <li value="3">Lo siento, necesito que me digas una fecha válida</li>
+          <li>
+            <think>
+              <set var="fecha"><get var="res"/></set>
+              <set var="horaev">23</set>
+              <set var="minev">31</set>
+            </think>
+          </li>
+        </condition>
+      </li>
+    </condition>
+    <condition var="valido?">
+      <li value="1">
+        <think><set var="lista"><map name="evento"><get var="fecha"/></map></set></think>
+        <condition var="lista">
+          <li value="unknown">No tienes eventos</li>
+          <li>
+            <think>
+              <set name="alternativas"><srai>HUECOSEN <get var="lista"/> AT <get var="horaev"/> <get var="minev"/></srai></set>
+            </think>
+            Tienes un hueco libre a las: <srai>SELECTITEM <get name="evnum"/> IN <get name="alternativas"/></srai>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Alternativas -->
+<!-- Para distinguir cuando una alternativa es de una hora o de una fecha y hora, simplemente se mide
+el número de letras que tiene -->
+<category>
+  <pattern>^ alguna (otra) alternativa ^</pattern>
+  <template>
+    <think>
+      <set name="actual"><map name="successor"><get name="evnum"/></map></set>
+      <set var="restante"><map name="successor"><srai>COUNT <get name="alternativas"/></srai></map></set></think>
+    <condition name="actual">
+      <li><value><get var="restante"/></value>No hay mas alternativas</li>
+      <li>
+        <think>
+          <set name="evnum"><map name="successor"><get name="evnum"/></map></set>
+          <set var="alternativa"><srai>SELECTITEM <get name="evnum"/> IN <get name="alternativas"/></srai></set>
+          <set var="tama"><srai>COUNT <srai>DELETREA <get var="alternativa"/></srai></srai></set>
+        </think>
+        <condition var="tama">
+          <li value="5">Si, a las <get var="alternativa"/></li>
+          <li value="15">
+            <think>
+              <set var="salidafecha"><srai>DAMEFECHA <get var="alternativa"/></srai></set>
+              <set var="salidahora"><srai>DAMEHORA <get var="alternativa"/></srai></set>
+            </think>
+            Si, el <get var="salidafecha"/> a las <get var="salidahora"/>
+          </li>
+          <li>Aun no me has pedido nada</li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Comprobar los huecos libres pero especificando por la mañana, tarde o noche -->
+<!-- Mañana : de 7:00 a 12:30 -->
+<!-- Tarde : de 13:00 a 20:30 -->
+<!-- Noche : de 21:00 a 6:30 -->
+<category>
+  <pattern>^ tengo algun hueco libre (el) (dia) * por la * ^</pattern>
+  <template>
+    <think>
+      <set var="dia"><star index="2"/></set>
+      <set var="momento"><star index="3"/></set>
+      <set var="valido?">1</set>
+      <set name="evnum">1</set>
+    </think>
+    <condition var="dia">
+      <li value="hoy">
+        <think>
+          <set var="fecha"><date jformat="dd/MM/yyyy"/></set>
+        </think>
+      </li>
+      <li value="mañana">
+        <think>
+          <set var="fechaseparada"><srai>SEPARAFECHA <date jformat="dd/MM/yyyy"/></srai></set>
+          <set var="fecha"><srai>TOMORROWMOD <get var="fechaseparada"/></srai></set>
+        </think>
+      </li>
+      <li>
+        <think><set var="valido?"><srai>COMPRUEBAFECHA <get var="dia"/></srai></set></think>
+        <condition var="valido?">
+          <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+          <li value="3">Lo siento, necesito que me digas una fecha válida</li>
+          <li>
+            <think>
+              <set var="fecha"><get var="res"/></set>
+            </think>
+          </li>
+        </condition>
+      </li>
+    </condition>
+    <condition var="valido?">
+      <li value="1">
+        <think>
+          <condition var="momento">
+            <li value="mañana">
+              <set var="horainf">07</set>
+              <set var="mininf">00</set>
+              <set var="horasup">12</set>
+              <set var="minsup">30</set>
+            </li>
+            <li value="tarde">
+              <set var="horainf">13</set>
+              <set var="mininf">00</set>
+              <set var="horasup">20</set>
+              <set var="minsup">30</set>
+            </li>
+            <li value="noche">
+              <set var="horainf">21</set>
+              <set var="mininf">00</set>
+              <set var="horasup">06</set>
+              <set var="minsup">30</set>
+            </li>
+          </condition>
+          <set var="lista"><map name="evento"><get var="fecha"/></map></set>
+        </think>
+        <condition var="lista">
+          <li value="unknown">No tienes eventos</li>
+          <li>
+            <think>
+              <set name="alternativas"><srai>HUECOSEN <get var="lista"/> AT <get var="horainf"/> <get var="mininf"/> AND <get var="horasup"/> <get var="minsup"/></srai></set>
+            </think>
+           Tienes un hueco libre a las: <srai>SELECTITEM <get name="evnum"/> IN <get name="alternativas"/></srai>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Comprobar la fecha en la que tenemos un evento con un contacto -->
+<category>
+  <pattern>^ cuando tengo [un una] [evento reunion] con *</pattern>
+  <template>
+    <think>
+      <set name="evnum">1</set>
+      <set var="contacto"><srai>PONERBARRABAJA <star index="2"/></srai></set>
+      <set var="nombre"><map name="nombre"><get var="contacto"/></map></set>
+    </think>
+    <!-- Comprobar si existe el contacto -->
+    <condition var="nombre">
+      <li value="unknown">Lo siento, no tengo un contacto con ese apellido</li>
+      <li>
+        <think>
+          <set name="alternativas"><srai>FECHASREUNION <get var="contacto"/></srai></set>
+          <set var="tama"><srai>COUNT <get name="alternativas"/></srai></set>
+        </think>
+        <condition var="tama">
+          <li value="0">No tienes que reunirte con ese contacto</li>
+          <li>
+            <think>
+              <set var="salida"><srai>SELECTITEM <get name="evnum"/> IN <get name="alternativas"/></srai></set>
+              <set var="salidafecha"><srai>DAMEFECHA <get var="salida"/></srai></set>
+              <set var="salidahora"><srai>DAMEHORA <get var="salida"/></srai></set>
+            </think>
+            Tienes un evento con <star index="2"/> el <get var="salidafecha"/> a las <get var="salidahora"/>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+</topic>
+
+
+</aiml>

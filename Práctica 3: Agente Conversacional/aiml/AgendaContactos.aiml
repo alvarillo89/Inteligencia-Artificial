@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!--Implementación del nivel 1-->
+<topic name="contactos">
+
+
+<!--Salir de la agenda de contactos -->
+<category>
+  <pattern>^ salir ^</pattern>
+  <template>
+    <think>
+        <set name="topic">unknown</set>
+    </think>
+    Espero haberte sido de ayuda
+  </template>
+</category>
+
+
+<!-- Agregar contactos-->
+<category>
+  <pattern>quiero [agregar añadir] (un) (otro) (nuevo) contacto</pattern>
+    <template>
+        Dime el apellido
+    </template>
+</category>
+
+
+<category>
+  <pattern>^ [agregar añadir] (un) (otro) (nuevo) contacto ^</pattern>
+  <template><srai>QUIERO AGREGAR UN NUEVO CONTACTO</srai></template>
+</category>
+
+
+<!--Leer apellidos -->
+<category>
+  <pattern>*</pattern>
+  <that>DIME EL APELLIDO</that>
+  <template>
+    <think>
+      <set name="apellido"><srai>PONERBARRABAJA <star/></srai></set>
+      <set var="res"><map name="nombre"><get name="apellido"/></map></set>
+    </think>
+    <condition var="res">
+      <li value="unknown"> Dime el nombre </li>
+      <li> No es posible agregar el contacto, ya esta en mi base de datos </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Leer el nombre y agregarlo a map "nombre" -->
+<category>
+  <pattern>*</pattern>
+  <that>DIME EL NOMBRE</that>
+  <template>
+    <think>
+      <set var="nombre"><star/></set>
+      <addtomap>
+        <name>nombre</name>
+        <key><get name="apellido"/></key>
+        <value><get var="nombre"/></value>
+      </addtomap>
+    </think>
+      Dime su domicilio
+  </template>
+</category>
+
+
+<!-- Leer el domicilio y agregarlo a map "direccion" -->
+<category>
+  <pattern>*</pattern>
+  <that>DIME SU DOMICILIO</that>
+  <template>
+    <think>
+      <set var="domicilio"><star/></set>
+      <addtomap>
+        <name>direccion</name>
+        <key><get name="apellido"/></key>
+        <value><get var="domicilio"/></value>
+      </addtomap>
+    </think>
+      Dime su telefono
+  </template>
+</category>
+
+
+<!-- Leer el telefono y agregarlo a map "telefono" -->
+<category>
+  <pattern>*</pattern>
+  <that>DIME SU TELEFONO</that>
+  <template>
+    <think>
+      <set var="telefono"><star/></set>
+      <addtomap>
+        <name>telefono</name>
+        <key><get name="apellido"/></key>
+        <value><get var="telefono"/></value>
+      </addtomap>
+    </think>
+      Perfecto, contacto guardado
+  </template>
+</category>
+
+
+<!-- Consultar nombre -->
+<category>
+  <pattern>^ nombre de *</pattern>
+  <template>
+    <think>
+      <set var="name"><srai>PONERBARRABAJA <star index="2"/></srai></set>
+      <set var="res"><map name="nombre"><get var="name"/></map></set>
+    </think>
+      <condition var="res">
+        <li value="unknown"> Lo siento, no tengo un contacto con ese apellido </li>
+        <li> Su nombre es <get var="res"/> </li>
+      </condition>
+  </template>
+</category>
+
+
+<!-- Consultar direccion -->
+<category>
+  <pattern>^ direccion de *</pattern>
+  <template>
+    <think>
+      <set var="dir"><srai>PONERBARRABAJA <star index="2"/></srai></set>
+      <set var="res"><map name="direccion"><get var="dir"/></map></set>
+    </think>
+      <condition var="res">
+        <li value="unknown"> Lo siento, no tengo un contacto con ese apellido </li>
+        <li> Su direccion es <get var="res"/> </li>
+      </condition>
+  </template>
+</category>
+
+
+<!-- Consultar telefono -->
+<category>
+  <pattern>^ telefono de *</pattern>
+  <template>
+    <think>
+      <set var="tlf"><srai>PONERBARRABAJA <star index="2"/></srai></set>
+      <set var="res"><map name="telefono"><get var="tlf"/></map></set>
+    </think>
+      <condition var="res">
+        <li value="unknown"> Lo siento, no tengo un contacto con ese apellido </li>
+        <li> Su telefono es <get var="res"/> </li>
+      </condition>
+  </template>
+</category>
+
+
+<!-- Consultar el numero de contactos-->
+<category>
+  <pattern>^ cuantos contactos ^</pattern>
+  <template>
+    <think>
+      <set var="valores"><readkeys>nombre</readkeys></set>
+      <set var="cantidad"><srai>COUNT <get var="valores"/></srai></set>
+    </think>
+    Tienes <get var="cantidad"/> contacto/s
+  </template>
+</category>
+
+
+<!--Listar contactos -->
+<category>
+  <pattern>^ [lista listar] (todos) (de) (mis) contactos ^</pattern>
+  <template>
+    <think>
+      <set var="valores"><readkeys>nombre</readkeys></set>
+    </think>
+    Tus contactos son: <get var="valores"/>
+  </template>
+</category>
+
+
+<!--Modificar un contacto -->
+<category>
+  <pattern>^ modificar ^</pattern>
+  <template>Cual es el apellido?</template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CUAL ES EL APELLIDO</that>
+  <template>
+    <think>
+      <set name="apellido"><srai>PONERBARRABAJA <star/></srai></set>
+      <set var="res"><map name="nombre"><get name="apellido"/></map></set>
+    </think>
+    <condition var="res">
+      <li value="unknown"> Lo siento, no tengo un contacto con ese apellido </li>
+      <li>Quieres modificar la direccion o el telefono?</li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>(El) (La) *</pattern>
+  <that>QUIERES MODIFICAR LA DIRECCION O EL TELEFONO</that>
+  <template>
+    <think>
+      <set var="res"><star/></set>
+    </think>
+    <condition var="res">
+      <li value="direccion">Cual es la nueva direccion?</li>
+      <li value="telefono">Cual es el nuevo telefono?</li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CUAL ES EL NUEVO TELEFONO</that>
+  <template>
+    <think>
+      <set var="telefono"><star/></set>
+      <modifymap>
+        <name>telefono</name>
+        <key><get name="apellido"/></key>
+        <value><get var="telefono"/></value>
+      </modifymap>
+    </think>
+      Perfecto, contacto modificado
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CUAL ES LA NUEVA DIRECCION</that>
+  <template>
+    <think>
+      <set var="domicilio"><star/></set>
+      <modifymap>
+        <name>direccion</name>
+        <key><get name="apellido"/></key>
+        <value><get var="domicilio"/></value>
+      </modifymap>
+    </think>
+      Perfecto, contacto modificado
+  </template>
+</category>
+
+
+<!-- Borrar un contacto -->
+<category>
+  <pattern> ^ [borrar eliminar borrarme] ^ </pattern>
+  <template>Necesito que me digas su apellido</template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>NECESITO QUE ME DIGAS SU APELLIDO</that>
+  <template>
+    <think>
+      <set name="apellido"><srai>PONERBARRABAJA <star/></srai></set>
+      <set var="res"><map name="nombre"><get name="apellido"/></map></set>
+    </think>
+    <condition var="res">
+      <li value="unknown"> Lo siento, no tengo un contacto con ese apellido </li>
+      <li>Estas seguro de que quieres borrarlo?</li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>ESTAS SEGURO DE QUE QUIERES BORRARLO</that>
+  <template>
+    <think>
+      <set var="res"><star/></set>
+    </think>
+    <condition var="res">
+      <li value="si">
+        <removefrommap>
+          <name>nombre</name>
+          <key><get name="apellido"/></key>
+        </removefrommap>
+
+        <removefrommap>
+          <name>direccion</name>
+          <key><get name="apellido"/></key>
+        </removefrommap>
+
+        <removefrommap>
+          <name>telefono</name>
+          <key><get name="apellido"/></key>
+        </removefrommap>
+        Contacto borrado con éxito
+      </li>
+      <li value="no"> Esta bien, no lo eliminaré </li>
+    </condition>
+  </template>
+</category>
+
+
+</topic>
+
+</aiml>

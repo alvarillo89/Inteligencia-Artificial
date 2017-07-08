@@ -1,0 +1,650 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!--Implementación del nivel 2-->
+<topic name="eventos">
+
+
+<!--Salir de la agenda de eventos -->
+<category>
+  <pattern>^ salir ^</pattern>
+  <template>
+    <think>
+        <set name="topic">unknown</set>
+    </think>
+    Guardando modificaciones... Terminado
+  </template>
+</category>
+
+
+<!-- Agregar eventos-->
+<category>
+  <pattern>quiero [agregar añadir] [un otro] (nuevo) evento</pattern>
+    <template>
+        Dime el nombre del evento
+    </template>
+</category>
+
+
+<category>
+  <pattern>^ [agregar añadir] (un) (otro) (nuevo) evento ^</pattern>
+  <template><srai>QUIERO AGREGAR UN NUEVO EVENTO</srai></template>
+</category>
+
+
+<category>
+  <pattern>^ [agrega añade] (un) (otro) (nuevo) evento ^</pattern>
+  <template><srai>QUIERO AGREGAR UN NUEVO EVENTO</srai></template>
+</category>
+
+
+<category>
+  <pattern>^ [agregame añademe] (un) (otro) (nuevo) evento ^</pattern>
+  <template><srai>QUIERO AGREGAR UN NUEVO EVENTO</srai></template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>DIME EL NOMBRE DEL EVENTO</that>
+  <template>
+    <think>
+      <set name="nombreevento"><srai>PONERBARRABAJA <star/></srai></set>
+    </think>
+    Dime la fecha del evento
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>DIME LA FECHA DEL EVENTO</that>
+  <template>
+    <think>
+      <set name="fecha"><star/></set>
+      <set var="valido?"><srai>COMPRUEBAFECHA <get name="fecha"/></srai></set>
+    </think>
+    <condition var="valido?">
+      <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+      <li value="3">Lo siento, necesito que me digas una fecha válida</li>
+      <li>
+        <think><set var="res"><map name="evento"><get name="fecha"/></map></set></think>
+        <condition var="res">
+          <li value="unknown">
+            <addtomap>
+              <name>evento</name>
+              <key><get name="fecha"/></key>
+              <value><srai>NULLABLE</srai></value>
+            </addtomap>
+            Dime la hora del evento
+          </li>
+          <li>Dime la hora del evento</li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>DIME LA HORA DEL EVENTO</that>
+  <template>
+    <!--Comprobar la hora -->
+    <think>
+      <set name="horaev"><srai>FORMATHORA <star/></srai></set>
+      <set var="pos"><map name="hora"><get name="horaev"/></map></set>
+    </think>
+    <condition var="pos">
+      <li value="unknown">Lo siento, necesito que me des una hora válida</li>
+      <li>
+        <!--Comprobar si ya hay un evento en esa posición -->
+        <think>
+          <set var="eventosfecha"><map name="evento"><get name="fecha"/></map></set>
+          <set var="eventohora"><srai>SELECTITEM <get var="pos"/> IN <get var="eventosfecha"/></srai></set>
+        </think>
+        <condition var="eventohora">
+          <li value="null">
+            <think>
+              <set var="nuevoeventosfecha"><srai>CHANGEITEM <get var="pos"/> BY <get name="nombreevento"/> IN <get var="eventosfecha"/></srai></set>
+              <modifymap>
+                <name>evento</name>
+                <key><get name="fecha"/></key>
+                <value><get var="nuevoeventosfecha"/></value>
+              </modifymap>
+            </think>
+            Quiere asociar un contacto al evento?
+          </li>
+          <li>No es posible agregar el evento, tienes otro evento que se solapa</li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>QUIERE ASOCIAR UN CONTACTO AL EVENTO</that>
+  <template>
+    <think><set var="res"><star/></set></think>
+    <condition var="res">
+      <li value="no">Perfecto, he agregado el nuevo evento</li>
+      <li>Quien es el contacto?</li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>QUIEN ES EL CONTACTO</that>
+  <template>
+    <think>
+      <set var="apellido"><srai>PONERBARRABAJA <star/></srai></set>
+      <set var="res"><map name="nombre"><get var="apellido"/></map></set>
+    </think>
+    <condition var="res"> <!-- Si no encuentra el nombre es porque no existe ese apellido -->
+      <li value="unknown"> Lo siento, no tengo un contacto con ese apellido </li>
+      <li>
+        <think>
+          <set var="fecha+hora"><get name="fecha"/>_<get name="horaev"/></set>
+          <set var="contactos"><map name="evper"><get var="fecha+hora"/></map></set>
+        </think>
+        <condition var="contactos">
+          <li value="unknown">
+            <addtomap>
+              <name>evper</name>
+              <key><get var="fecha+hora"/></key>
+              <value><get var="apellido"/></value>
+            </addtomap>
+            Contacto agregado, quiere asociar otro contacto al evento?
+          </li>
+          <li>
+            <think><set var="contactosmodificados"><get var="contactos"/> <get var="apellido"/></set></think>
+            <modifymap>
+              <name>evper</name>
+              <key><get var="fecha+hora"/></key>
+              <value><get var="contactosmodificados"/></value>
+            </modifymap>
+            Contacto agregado, quiere asociar otro contacto al evento?
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CONTACTO AGREGADO, QUIERE ASOCIAR OTRO CONTACTO AL EVENTO</that>
+  <template>
+    <think><set var="res"><star/></set></think>
+    <condition var="res">
+      <li value="no">Perfecto, he agregado el nuevo evento</li>
+      <li value="si">Quien es el contacto?</li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Listar los eventos de un día -->
+<category>
+  <pattern>^ (que) (los) eventos (que) tengo el (dia) * ^</pattern>
+  <template>
+    <think>
+      <set var="fecha"><star index="2"/></set>
+      <set var="valido?"><srai>COMPRUEBAFECHA <get var="fecha"/></srai></set>
+    </think>
+    <condition var="valido?">
+      <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+      <li value="3">Lo siento, necesito que me digas una fecha válida para comprobar los eventos</li>
+      <li>
+        <think><set var="res"><map name="evento"><get var="fecha"/></map></set></think>
+        <condition var="res">
+          <li value="unknown">No tienes ninguno</li>
+          <li>
+            <think>
+              <set var="eventos"><srai>EVENTOSEN <get var="fecha"/></srai></set>
+              <set var="size"><srai>COUNT <get var="eventos"/></srai></set>
+            </think>
+            <condition var="size">
+              <li value="0">No tienes ninguno</li>
+              <li>Tienes: <get var="eventos"/></li>
+            </condition>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Contar el número de eventos de un dia -->
+<category>
+  <pattern>^ cuantos eventos tengo el (dia) * ^</pattern>
+  <template>
+    <think>
+      <set var="fecha"><star index="2"/></set>
+      <set var="valido?"><srai>COMPRUEBAFECHA <get var="fecha"/></srai></set>
+    </think>
+    <condition var="valido?">
+      <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+      <li value="3">Lo siento, necesito que me digas una fecha válida para comprobar los eventos</li>
+      <li>
+        <think><set var="res"><map name="evento"><get var="fecha"/></map></set></think>
+        <condition var="res">
+          <li value="unknown">No tienes ningún evento</li>
+          <li>
+            <think>
+              <set var="eventos"><srai>EVENTOSEN <get var="fecha"/></srai></set>
+              <set var="size"><srai>COUNT <get var="eventos"/></srai></set>
+            </think>
+            <condition var="size">
+              <li value="0">No tienes ningún evento</li>
+              <li>Tienes <get var="size"/> evento/s</li>
+            </condition>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!-- Borrar un evento -->
+<category>
+  <pattern>^ borrar ^</pattern>
+  <template>
+    Que fecha tiene el evento que desea borrar?
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>QUE FECHA TIENE EL EVENTO QUE DESEA BORRAR</that>
+  <template>
+    <think>
+      <set name="fecha"><star/></set>
+      <set var="valido?"><srai>COMPRUEBAFECHA <get name="fecha"/></srai></set>
+    </think>
+    <condition var="valido?">
+      <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+      <li value="3">Lo siento, necesito que me digas una fecha válida para poder borrar eventos</li>
+      <li>
+        <think><set name="eventos"><map name="evento"><get name="fecha"/></map></set></think>
+        <condition name="eventos">
+          <li value="unknown">No tienes ningún evento en esa fecha</li>
+          <li>Cual es la hora del evento?</li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CUAL ES LA HORA DEL EVENTO</that>
+  <template>
+    <think>
+      <set var="horaev"><srai>FORMATHORA <star/></srai></set>
+      <set name="pos"><map name="hora"><get var="horaev"/></map></set>
+    </think>
+    <condition name="pos">
+      <li value="unknown">Lo siento necesito que me digas una hora válida</li>
+      <li>Esta usted seguro?</li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>ESTA USTED SEGURO</that>
+  <template>
+    <think><set var="res"><star/></set></think>
+    <condition var="res">
+      <li value="no">Esta bien, no lo borraré</li>
+      <li>
+        <think>
+          <set var="eventohora"><srai>SELECTITEM <get name="pos"/> IN <get name="eventos"/></srai></set>
+        </think>
+        <condition var="eventohora">
+          <li value="null">No he podido borrarlo, no tienes ningún evento en esa hora</li>
+          <li>
+            <think>
+              <set var="nuevoeventos"><srai>CHANGEITEM <get name="pos"/> BY null IN <get name="eventos"/></srai></set>
+              <modifymap>
+                <name>evento</name>
+                <key><get name="fecha"/></key>
+                <value><get var="nuevoeventos"/></value>
+              </modifymap>
+            </think>
+            Evento borrado
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<!--Modificar eventos -->
+<category>
+  <pattern>^ modificar ^</pattern>
+  <template>
+    Cual es la fecha del evento que desea modificar?
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CUAL ES LA FECHA DEL EVENTO QUE DESEA MODIFICAR</that>
+  <template>
+    <think>
+      <set name="fecha"><star/></set>
+      <set var="valido?"><srai>COMPRUEBAFECHA <get name="fecha"/></srai></set>
+    </think>
+    <condition var="valido?">
+      <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+      <li value="3">Lo siento, necesito que me digas una fecha válida para poder modificar eventos</li>
+      <li>
+        <think><set name="eventos"><map name="evento"><get name="fecha"/></map></set></think>
+        <condition name="eventos">
+          <li value="unknown">No tienes ningún evento en esa fecha</li>
+          <li>Cual es su hora?</li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CUAL ES SU HORA</that>
+  <template>
+    <think>
+      <set name="hora"><srai>FORMATHORA <star/></srai></set>
+      <set name="pos"><map name="hora"><get name="hora"/></map></set>
+    </think>
+    <condition name="pos">
+      <li value="unknown">Lo siento necesito que me digas una hora válida</li>
+      <li>Desea modificar el titulo, la hora, la fecha o un contacto asociado?</li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <that>DESEA MODIFICAR EL TITULO, LA HORA, LA FECHA O UN CONTACTO ASOCIADO</that>
+  <pattern>(el) (la) (un) * (asociado)</pattern>
+  <template>
+    <think><set var="res"><star/></set></think>
+    <condition var="res">
+      <li value="titulo">Cual es el nuevo titulo del evento?</li>
+      <li value="hora">Cual es la nueva hora del evento?</li>
+      <li value="fecha">Cual es la nueva fecha del evento?</li>
+      <li value="contacto">Quiere agregar o eliminar un contacto?</li>
+      <li>Lo siento, esa opción no es válida</li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CUAL ES EL NUEVO TITULO DEL EVENTO</that>
+  <template>
+    <think>
+      <set var="titulo"><srai>PONERBARRABAJA <star/></srai></set>
+      <set var="eventohora"><srai>SELECTITEM <get name="pos"/> IN <get name="eventos"/></srai></set>
+    </think>
+    <condition var="eventohora">
+      <li value="null">No he podido modificarlo, no tienes ningún evento en esa hora</li>
+      <li>
+        <think>
+          <set var="nuevoeventos"><srai>CHANGEITEM <get name="pos"/> BY <get var="titulo"/> IN <get name="eventos"/></srai></set>
+          <modifymap>
+            <name>evento</name>
+            <key><get name="fecha"/></key>
+            <value><get var="nuevoeventos"/></value>
+          </modifymap>
+        </think>
+        Evento modificado con éxito
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CUAL ES LA NUEVA HORA DEL EVENTO</that>
+  <template>
+    <think>
+      <set var="nuevahora"><srai>FORMATHORA <star/></srai></set>
+      <set var="nuevapos"><map name="hora"><get var="nuevahora"/></map></set>
+    </think>
+    <condition var="nuevapos">
+      <li value="unknown">Lo siento necesito que me digas una hora válida</li>
+      <li>
+        <think>
+          <set var="eventohora"><srai>SELECTITEM <get name="pos"/> IN <get name="eventos"/></srai></set>
+          <set var="nuevoeventohora"><srai>SELECTITEM <get var="nuevapos"/> IN <get name="eventos"/></srai></set>
+        </think>
+        <condition var="eventohora">
+          <li value="null">No he podido modificarlo, no tienes ningún evento en esa hora</li>
+          <li>
+            <condition var="nuevoeventohora">
+              <li value="null">
+                <think>
+                  <set var="nuevoeventos"><srai>CHANGEITEM <get name="pos"/> BY null IN <get name="eventos"/></srai></set>
+                  <set var="nuevoeventos"><srai>CHANGEITEM <get var="nuevapos"/> BY <get var="eventohora"/> IN <get var="nuevoeventos"/></srai></set>
+                  <modifymap>
+                    <name>evento</name>
+                    <key><get name="fecha"/></key>
+                    <value><get var="nuevoeventos"/></value>
+                  </modifymap>
+                </think>
+                Evento modificado con éxito
+              </li>
+              <li>No puedo colocar el nuevo evento ahí, se solapa con otro</li>
+            </condition>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CUAL ES LA NUEVA FECHA DEL EVENTO</that>
+  <template>
+    <think>
+      <set var="nuevafecha"><star/></set>
+      <set var="valido?"><srai>COMPRUEBAFECHA <get var="nuevafecha"/></srai></set>
+    </think>
+    <condition var="valido?">
+      <li value="2">Necesito que introduzcas la fecha como DD/MM/AAAA</li>
+      <li value="3">Lo siento, necesito que me digas una fecha válida</li>
+      <li>
+        <think><set var="nuevalista"><map name="evento"><get var="nuevafecha"/></map></set></think>
+        <condition var="nuevalista">
+          <li value="unknown">
+            <addtomap>
+              <name>evento</name>
+              <key><get var="nuevafecha"/></key>
+              <value><srai>NULLABLE</srai></value>
+            </addtomap>
+            <think><set var="nuevalista"><map name="evento"><get var="nuevafecha"/></map></set></think>
+          </li>
+        </condition>
+        <think>
+          <set var="eventohora"><srai>SELECTITEM <get name="pos"/> IN <get name="eventos"/></srai></set>
+          <set var="nuevoeventohora"><srai>SELECTITEM <get name="pos"/> IN <get var="nuevalista"/></srai></set>
+        </think>
+        <condition var="eventohora">
+          <li value="null">No he podido modificarlo, no tienes ningún evento en esa hora</li>
+          <li>
+            <condition var="nuevoeventohora">
+              <li value="null">
+                <think>
+                  <set var="nuevoeventos1"><srai>CHANGEITEM <get name="pos"/> BY null IN <get name="eventos"/></srai></set>
+                  <set var="nuevoeventos2"><srai>CHANGEITEM <get name="pos"/> BY <get var="eventohora"/> IN <get var="nuevalista"/></srai></set>
+                  <modifymap>
+                    <name>evento</name>
+                    <key><get name="fecha"/></key>
+                    <value><get var="nuevoeventos1"/></value>
+                  </modifymap>
+                  <modifymap>
+                    <name>evento</name>
+                    <key><get var="nuevafecha"/></key>
+                    <value><get var="nuevoeventos2"/></value>
+                  </modifymap>
+                </think>
+                Evento modificado con éxito
+              </li>
+              <li>No puedo colocar el nuevo evento ahí, se solapa con otro</li>
+            </condition>
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>QUIERE AGREGAR O ELIMINAR UN CONTACTO</that>
+  <template>
+    <think><set var="res"><star/></set></think>
+    <condition var="res">
+      <li value="agregar">Dime el apellido del contacto que quieres agregar</li>
+      <li value="eliminar">Dime el apellido del contacto que quieres eliminar</li>
+      <li>Esa opción no es válida</li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>DIME EL APELLIDO DEL CONTACTO QUE QUIERES AGREGAR</that>
+  <template>
+    <think>
+      <set var="apellido"><srai>PONERBARRABAJA <star/></srai></set>
+      <set var="valido?"><map name="nombre"><get var="apellido"/></map></set>
+      <set var="clave"><get name="fecha"/>_<get name="hora"/></set>
+      <set var="listacontactos"><map name="evper"><get var="clave"/></map></set>
+    </think>
+    <condition var="valido?">
+      <li value="unknown">Lo siento, no tengo un contacto con ese apellido</li>
+      <li>
+        <condition var="listacontactos">
+          <li value="unknown">
+            <addtomap>
+              <name>evper</name>
+              <key><get var="clave"/></key>
+              <value><get var="apellido"/></value>
+            </addtomap>
+          </li>
+          <li>
+            <think>
+              <set var="listacontactos"><get var="listacontactos"/> <get var="apellido"/></set>
+              <modifymap>
+                <name>evper</name>
+                <key><get var="clave"/></key>
+                <value><get var="listacontactos"/></value>
+              </modifymap>
+            </think>
+          </li>
+        </condition>
+        Contacto añadido, quieres añadir otro contacto?
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CONTACTO AÑADIDO, QUIERES AÑADIR OTRO CONTACTO</that>
+  <template>
+    <think><set var="res"><star/></set></think>
+    <condition var="res">
+      <li value="si">Dime el apellido del contacto que quieres agregar</li>
+      <li>Evento modificado</li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>DIME EL APELLIDO DEL CONTACTO QUE QUIERES ELIMINAR</that>
+  <template>
+    <think>
+      <set var="apellido"><srai>PONERBARRABAJA <star/></srai></set>
+      <set var="valido?"><map name="nombre"><get var="apellido"/></map></set>
+      <set var="clave"><get name="fecha"/>_<get name="hora"/></set>
+      <set var="listacontactos"><map name="evper"><get var="clave"/></map></set>
+    </think>
+    <condition var="valido?">
+      <li value="unknown">Lo siento, no tengo un contacto con ese apellido</li>
+      <li>
+        <think><set var="pos"><srai>FINDITEM <get var="apellido"/> IN <get var="listacontactos"/></srai></set></think>
+        <condition var="pos">
+          <li value="0">Lo siento, ese contacto no está en el evento</li>
+          <li>
+            <think>
+              <set var="listacontactos"><srai>REMOVEITEM <get var="pos"/> IN <get var="listacontactos"/></srai></set>
+              <set var="size"><srai>COUNT <get var="listacontactos"/></srai></set>
+            </think>
+            <condition var="size">
+              <li value="0">
+                <removefrommap>
+                  <name>evper</name>
+                  <key><get var="clave"/></key>
+                </removefrommap>
+              </li>
+              <li>
+                <modifymap>
+                  <name>evper</name>
+                  <key><get var="clave"/></key>
+                  <value><get var="listacontactos"/></value>
+                </modifymap>
+              </li>
+            </condition>
+          Contacto eliminado, quieres eliminar otro contacto?
+          </li>
+        </condition>
+      </li>
+    </condition>
+  </template>
+</category>
+
+
+<category>
+  <pattern>*</pattern>
+  <that>CONTACTO ELIMINADO, QUIERES ELIMINAR OTRO CONTACTO</that>
+  <template>
+    <think><set var="res"><star/></set></think>
+    <condition var="res">
+      <li value="si">Dime el apellido del contacto que quieres eliminar</li>
+      <li>Evento modificado</li>
+    </condition>
+  </template>
+</category>
+
+
+</topic>
+
+</aiml>
